@@ -33,8 +33,9 @@ def get(path, params=None):
 
 if __name__ == '__main__':
 
-    # Nate's api key. Should work for you
-    apikey = 'ada2ceae1a5d78e2f2bc6edb6c5183dd'
+    #add "export ILLUSTRISAPIKEY='insert your api key here'"
+    #  to your .bashrc
+    apikey = os.environ['ILLUSTRISAPIKEY']
 
     Isim=3 # simulation 3 is low resolution
     snapNum = 134 # last num in Ill-1, 3rd to last in Ill-3
@@ -46,7 +47,7 @@ if __name__ == '__main__':
 
     ##determine how many subhalos in simulation (also, accessing the subhalo catalogue)
     url='http://www.illustris-project.org/api/Illustris-'+str(Isim)+'/snapshots/'+str(snapNum)+'/subhalos/'
-    subhalocat=get(url, {'limit':10000})
+    subhalocat=get(url, {'limit':100})
 
     subhalos =  subhalocat['results']
     subhal_m = []
