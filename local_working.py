@@ -8,15 +8,16 @@ from matplotlib import cm
 from scipy import stats
 from mayavi import mlab
 
-def plot_subhalo_3d_density_pts(subhalos):
+def plot_subhalo_3d_density_pts(subhalos, voids, v_size):
     x = [xyz[0] for xyz in subhalos['SubhaloPos']]
     y = [xyz[1] for xyz in subhalos['SubhaloPos']]
     z = [xyz[2] for xyz in subhalos['SubhaloPos']]
     w = np.log10(subhalos['SubhaloMass'])
     fig = mlab.figure('DensityPlot')
     fig.scene.disable_render = True
-    #pts = mlab.points3d(x[::10], y[::10], z[::10], w[::10],scale_factor=300)
-    pts = mlab.points3d(x, y, z, w.tolist(), scale_factor=250)
+    pts2 = mlab.points3d(voids[0], voids[1], voids[2],scale_factor=v_size)
+    pts = mlab.points3d(x[::30], y[::30], z[::30], w.tolist()[::30],
+scale_factor=200)
     mask = pts.glyph.mask_points
     mask.maximum_number_of_points = len(x)
     mask.on_ratio = 1
@@ -30,18 +31,20 @@ if __name__ == '__main__':
     #  to your .bashrc
     apikey = os.environ['ILLUSTRISAPIKEY']
 
-    Isim=3 # simulation 3 is low resolution
-    snapNum = 134 # last num in Ill-1, 3rd to last in Ill-3
+    Isim=1 # simulation 3 is low resolution
+    snapNum = 135 
 
     basePath='./Illustris-'+str(Isim)+'/'
-    fields = ['SubhaloMass', 'SubhaloPos', 'SubhaloVel']
+    fields = ['SubhaloMass', 'SubhaloPos']
     subhalos = il.groupcat.loadSubhalos(basePath,snapNum,fields=fields)
 
-    #H, edges = np.histogramdd(subhalos['SubhaloPos'], bins=(50,50,50),\
-                              #weights=subhalos['SubhaloMass'])
-    #print(np.asarray(edges).shape)
-
-    plot_subhalo_3d_density_pts(subhalos)
+    H, edges = np.histogramdd(subhalos['SubhaloPos'], bins=(6,6,6),\
+                              weights=subhalos['SubhaloMass'])
+    cube_length = edges[0][1]-edges[0][0]
+    mass_cutoff = .01 * H.max()
+    void_cubes = (np.asarray(np.where(H < mass_cutoff)) + 0.5)\
+                 * cube_length
+    plot_subhalo_3d_density_pts(subhalos, void_cubes, cube_length)
 
     #print(subhalos['SubhaloPos'].shape)
     
