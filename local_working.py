@@ -56,29 +56,54 @@ if __name__ == '__main__':
                 * cube_length
     #void_cntr = (np.asarray(np.where(H == H.max())) + 0.5)\
                 #* cube_length
-
     centers = [(edges[i][:6] + (0.5 * cube_length)).tolist()\
-               for i in range(3)]
+                for i in range(3)]
+    for i in centers[0]:
+        for j in centers[1]:
+            for k in centers[2]:
+                centers.append([i,j,k])
+    centers = centers[3:]
     
-    ctr_sbhal_idx = np.argmin(\
-                     dist2point(void_cntr, subhalos['SubhaloPos'])[0])
-    dists,dir_vecs = dist2point(subhalos['SubhaloPos'][ctr_sbhal_idx],\
-                                subhalos['SubhaloPos'])
-    vel_diffs = subhalos['SubhaloVel']\
-                - subhalos['SubhaloVel'][ctr_sbhal_idx].flatten()
-    with np.errstate(invalid='ignore'):
-        vels = np.einsum('ij,ij->i', dir_vecs, vel_diffs) / dists
-    vels = np.nan_to_num(vels)
-    dists = dists * 106.5/75000
-    invoid_idx = np.where(dists < 10)
-    vels = vels[invoid_idx]
-    dists = dists[invoid_idx]
-    print(so.curve_fit(lambda x, m: m*x, dists, vels)[0][0])
-    #print(stats.linregress(np.sqrt(np.sum((dir_vecs)**2,axis=1)), vels))
-    plt.plot(dists, vels, 'ro')
-    #plt.xlim((0, 14000))
+    hubbles = []
+    easy = 216
+    for center in centers[:easy]:
+        ctr_sbhal = np.argmin(dist2point(np.asarray([center]),\
+                                         subhalos['SubhaloPos'])[0])
+        dists, dir_vecs = dist2point(subhalos['SubhaloPos'][ctr_sbhal],\
+                                     subhalos['SubhaloPos'])
+        vel_diffs = subhalos['SubhaloVel']\
+                    - subhalos['SubhaloVel'][ctr_sbhal].flatten()
+        with np.errstate(invalid='ignore'):
+            vels = np.einsum('ij,ij->i', dir_vecs, vel_diffs) / dists
+        vels = np.nan_to_num(vels)
+        dists = dists * 106.5/75000
+        invoid_idx = np.where(dists < 20)
+        vels = vels[invoid_idx]
+        dists = dists[invoid_idx]
+        hubbles.append(so.curve_fit(lambda x, m: m*x, dists, vels)[0][0])
+    plt.plot(np.asarray(H).flatten()[:easy], hubbles, 'ro')
     plt.show()
-    #print(subhalos['SubhaloPos'][ctr_sbhal_idx])
+        
+    
+    #ctr_sbhal = np.argmin(\
+                     #dist2point(void_cntr, subhalos['SubhaloPos'])[0])
+    #dists,dir_vecs = dist2point(subhalos['SubhaloPos'][ctr_sbhal],\
+                                #subhalos['SubhaloPos'])
+    #vel_diffs = subhalos['SubhaloVel']\
+                #- subhalos['SubhaloVel'][ctr_sbhal].flatten()
+    #with np.errstate(invalid='ignore'):
+        #vels = np.einsum('ij,ij->i', dir_vecs, vel_diffs) / dists
+    #vels = np.nan_to_num(vels)
+    #dists = dists * 106.5/75000
+    #invoid_idx = np.where(dists < 20)
+    #vels = vels[invoid_idx]
+    #dists = dists[invoid_idx]
+    #print(so.curve_fit(lambda x, m: m*x, dists, vels)[0][0])
+    #print(stats.linregress(np.sqrt(np.sum((dir_vecs)**2,axis=1)), vels))
+    #plt.plot(dists, vels, 'ro')
+    #plt.xlim((0, 14000))
+    #plt.show()
+    #print(subhalos['SubhaloPos'][ctr_sbhal])
     #print(void_cntr)
 
     #plot_subhalo_3d_density_pts(subhalos, void_cntr, cube_length)
